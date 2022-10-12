@@ -1,5 +1,5 @@
 
-# Garbowski -  "Temperature seasonality and nutrient enrichment drive intra-annual community turnover in global grasslands" 
+# Functions associate with "Temperature seasonality and nutrient enrichment drive intra-annual community turnover in global grasslands" 
 # October 11, 2022
 
 # functions take community data from two time periods each growing season (early, late) to calculate 
@@ -37,10 +37,10 @@ combos_function <- function(ls){
   }
 } 
 
-# add missing species to early vs. late communities and fill with "0" 
-missing_sps_function <- function(list){
-  mat_1 = list[[1]] # early community
-  mat_2 = list[[2]] # late community 
+# add missing species to early vs. late communities and fill with 0 for comparisions
+missing_sps_function <- function(ls){
+  mat_1 = ls[[1]] # early community
+  mat_2 = ls[[2]] # late community 
   
   # get species names from both early and late communities 
   sps.names <- unique(c(colnames(mat_1)[2:(length(mat_1)-2)], colnames(mat_2)[2:(length(mat_2)-2)]))
@@ -61,9 +61,9 @@ missing_sps_function <- function(list){
 }
 
 # bray observed function 
-bray_obs_function <- function(list){
-  m1 = list[[1]]
-  m2 = list[[2]]
+bray_obs_function <- function(ls){
+  m1 = ls[[1]]
+  m2 = ls[[2]]
   
   fun =  function(m_1, m_2){
     rbind(m_1, m_2)
@@ -79,8 +79,8 @@ bray_obs_function <- function(list){
 }
 
 # permutations function 
-### permute within communities however many times we decide on
-### get beta expected by comparing permuted rows early to permuted rows late
+# permute within communities n times
+# get beta expected by comparing permuted rows early to permuted rows late
 
 permutations_function <- function(df, n_permutations){
   empty_matrix <- data.frame(matrix(ncol = length(df)-1, nrow = n_permutations)) # create empty matrix of n permutations
@@ -88,16 +88,16 @@ permutations_function <- function(df, n_permutations){
   
   out_matrix <- as.data.frame(t(apply(empty_matrix, 1, function(x){sample(values)}))) # randomly sample values into n communities 
   colnames(out_matrix) <- names(df)[2:length(df)] # add species names to matrix
-  out_matrix = cbind(plot_id_sampling = as.character(df$site_sampling_trt_yr_blk_plot), out_matrix) # add plot names
-  out_matrix$plot_id = gsub("_Early_|_Late_", "_", out_matrix$plot_id_sampling) # remove "early" and "late" from plot_id
-  out_matrix$sampling = ifelse(grepl("_Early_", df$site_sampling_trt_yr_blk_plot), "Early", "Late") # create sampling column in matrix 
+  out_matrix <- cbind(plot_id_sampling = as.character(df$site_sampling_trt_yr_blk_plot), out_matrix) # add plot names
+  out_matrix$plot_id <- gsub("_Early_|_Late_", "_", out_matrix$plot_id_sampling) # remove "early" and "late" from plot_id
+  out_matrix$sampling <- ifelse(grepl("_Early_", df$site_sampling_trt_yr_blk_plot), "Early", "Late") # create sampling column in matrix 
   return(out_matrix)
 }
 
 # calculate dissimilarity of rows in matrix 1 to rows in matrix 2 
-bray_null_function <- function(list){
-  m1 = list[[1]]
-  m2 = list[[2]]
+bray_null_function <- function(ls){
+  m1 = ls[[1]]
+  m2 = ls[[2]]
   
   fun =  function(m_1, m_2){
     rbind(m_1, m_2)
@@ -119,8 +119,7 @@ bray_null_function <- function(list){
   return(out_all)
 }
 
-# null function to get z-scores for permutations
-
+# null function 
 null_function <- function(df){
   df$bray <- as.numeric(as.character(df$bray))
   bray_mean_null = mean(df$bray) # gets mean of the expected bray values from randomizations 
@@ -129,8 +128,6 @@ null_function <- function(df){
   return(bray_null)
 }
 
-# get z-scores
+# z-scores for analyses
 bray_null_obs$z_score <- (bray_null_obs$bray - bray_null_obs$bray_mean_null)/(bray_null_obs$bray_sd_null)
-
-
 
